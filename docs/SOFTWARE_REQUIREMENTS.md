@@ -52,49 +52,24 @@ Replace monolithic parking operations with a secure web application: role-based 
 - Passwords stored hashed (bcrypt); secrets via environment variables.
 - Structured server logging (console) plus persisted audit trail.
 
-## 4. Database design (summary)
+## 4. Database and architecture (detailed documentation)
 
-- **User**: credentials, profile fields, `role` (`ADMIN` \| `PARKING_ATTENDANT`).
-- **Parking**: `code`, `name`, `totalSpaces`, `availableSpaces`, `location`, `feePerHour`.
-- **ParkingSession**: `ticketNumber`, `plateNumber`, `parkingId`, `entryAt`, `exitAt?`, `chargedAmount`.
-- **ActivityLog**: `userId?`, `action`, `details` (JSON), `ip`, `createdAt`.
+These companion documents are written for **GitHub** and print well as Markdown:
 
-Physical database: **PostgreSQL** via Prisma; connection string in `DATABASE_URL`.
+| Document | Contents |
+|----------|----------|
+| [**DATABASE_DESIGN.md**](./DATABASE_DESIGN.md) | ER diagram (Mermaid), table-by-table reference, indexes, enum `Role`, entry/exit write sequences, links to Prisma files. |
+| [**SYSTEM_ARCHITECTURE.md**](./SYSTEM_ARCHITECTURE.md) | Client–API–database view, Express router map, JWT and security, sequence diagram for exit, frontend structure, deployment sketch, Swagger pointer. |
 
-## 5. Data flow (high level)
+## 5. Data flow (summary)
 
-```mermaid
-flowchart LR
-  subgraph client [React SPA]
-    Forms[Forms: signup, login, parking, entry, exit, reports]
-  end
-  subgraph api [Node API]
-    GW[JWT middleware]
-    Auth[Auth]
-    Park[Parking]
-    Sess[Sessions]
-    Rep[Reports]
-    Log[Activity logs]
-  end
-  DB[(PostgreSQL)]
-  Forms --> GW
-  GW --> Auth
-  GW --> Park
-  GW --> Sess
-  GW --> Rep
-  GW --> Log
-  Auth --> DB
-  Park --> DB
-  Sess --> DB
-  Rep --> DB
-  Log --> DB
-```
+1. **Signup / login** → JWT stored in `localStorage` → `Authorization: Bearer` on API calls.
+2. **Register parking** (admin) → row in `Parking`; attendants use read APIs for availability and fees.
+3. **Entry** → validate capacity → create `ParkingSession`, decrement `availableSpaces`, append activity log.
+4. **Exit** → compute duration and charge → update session and `availableSpaces`, return bill payload, append activity log.
+5. **Reports** → filtered queries over `ParkingSession` (by `entryAt` or `exitAt`); outgoing report includes revenue sum.
 
-1. **Signup / login** → JWT stored in `localStorage` → `Authorization: Bearer`.
-2. **Register parking** (admin) → row in `Parking`.
-3. **Entry** → validate spaces → create `ParkingSession`, decrement `availableSpaces`, log.
-4. **Exit** → load session and tariff → compute charge → update session and `availableSpaces`, log.
-5. **Reports** → filtered queries with aggregates where required.
+For diagrams and component-level detail, see [SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTURE.md).
 
 ## 6. Forms / UI surfaces (names)
 

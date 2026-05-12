@@ -6,9 +6,17 @@ Full-stack reference implementation for **Tasks 2–5**: JWT authentication with
 
 | Path | Description |
 |------|-------------|
-| `docs/SOFTWARE_REQUIREMENTS.md` | Written requirements, data-flow summary, and named forms/pages. |
+| `docs/README.md` | Short index of all documentation files in this folder. |
+| `docs/DATABASE_DESIGN.md` | **Database design:** ER diagram, tables, columns, indexes, write sequences. |
+| `docs/SYSTEM_ARCHITECTURE.md` | **System architecture:** layers, security, diagrams, deployment overview. |
 | `backend/` | **Node.js + Express + TypeScript + Prisma (PostgreSQL)** REST API. |
 | `frontend/` | **React + Vite + TypeScript** SPA. |
+
+### Documentation
+
+- [Software requirements](docs/SOFTWARE_REQUIREMENTS.md) — what the system must do.  
+- [Database design](docs/DATABASE_DESIGN.md) — ER model, tables, and persistence details.  
+- [System architecture](docs/SYSTEM_ARCHITECTURE.md) — components, security, and request flows.
 
 ## Prerequisites
 
