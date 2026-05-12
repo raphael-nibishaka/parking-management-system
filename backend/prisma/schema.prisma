@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  PARKING_ATTENDANT
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  firstName    String
+  lastName     String
+  passwordHash String
+  role         Role     @default(PARKING_ATTENDANT)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  activityLogs ActivityLog[]
+}
+
+model Parking {
+  id              String   @id @default(uuid())
+  code            String   @unique
+  name            String
+  totalSpaces     Int
+  availableSpaces Int
+  location        String
+  feePerHour      Float
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  sessions ParkingSession[]
+}
+
+model ParkingSession {
+  id            String    @id @default(uuid())
+  ticketNumber  String    @unique
+  plateNumber   String
+  parkingId     String
+  parking       Parking   @relation(fields: [parkingId], references: [id], onDelete: Cascade)
+  entryAt       DateTime
+  exitAt        DateTime?
+  chargedAmount Float     @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([parkingId])
+  @@index([entryAt])
+  @@index([exitAt])
+  @@index([plateNumber])
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  details   String?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([action])
+}
